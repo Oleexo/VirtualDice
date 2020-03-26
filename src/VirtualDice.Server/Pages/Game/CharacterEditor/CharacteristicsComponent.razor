@@ -1,0 +1,321 @@
+﻿@using Microsoft.Extensions.Localization
+@using VirtualDice.Common
+@inject IStringLocalizer<CharacterEditor> DefaultLocalizer
+
+<h5>@DefaultLocalizer["Characteristics"]</h5>
+@if (Characteristics == null && CharacteristicsValues == null) {
+    <p>@DefaultLocalizer["CharacteristicsNotDefined"]</p>
+    <button class="btn btn-primary" @onclick="RollDiceForCharacteristics">@DefaultLocalizer["RollTheDice"]</button>
+}
+else if (CharacteristicsValues != null) {
+    <p>@DefaultLocalizer["CharacteristicsValues"]</p>
+    <p>
+        <button class="btn btn-info" @onclick="OnResetPressed">Reset</button>
+        <i>
+            @for (var i = 0; i < 6; i++)
+            {
+                @if (!CharacteristicsUsed[i])
+                {
+                    <span>@CharacteristicsValues[i]</span>
+                }
+                else
+                {
+                    <del>@CharacteristicsValues[i]</del>
+                }
+            }
+        </i>
+    </p>
+    <div class="row">
+        <div class="col">
+            <h6>
+                @DefaultLocalizer["CharacteristicsStrength"]
+                @if (Strength > 0) {
+                    <span>(@Strength)</span>
+                }
+            </h6>
+            <div class="btn-group btn-group-toggle">
+                @for (var i = 0; i < CharacteristicsValues.Length; i++) {
+                    <label for="@string.Concat(CharacteristicsValues[i], "CharacteristicsStrength")"
+                           class="btn btn-secondary @(ButtonGroupHelper(CharacteristicsValues[i], Strength, CharacteristicsUsed[i]))">
+                        <InputRadio id="@string.Concat(CharacteristicsValues[i], "CharacteristicsStrength")" name="strength"
+                                    SelectedValue="CharacteristicsValues[i]"
+                                    @bind-Value="Strength"
+                                    disabled="@CharacteristicsUsed[i]"/>
+                        @CharacteristicsValues[i]
+                    </label>
+                }
+            </div>
+            <small class="form-text text-muted">@DefaultLocalizer["CharacteristicsStrengthHelp"]</small>
+
+            <h6>
+                @DefaultLocalizer["CharacteristicsDexterity"]
+                @if (Dexterity > 0) {
+                    <span>(@Dexterity)</span>
+                }
+            </h6>
+            <div class="btn-group btn-group-toggle">
+                @for (var i = 0; i < CharacteristicsValues.Length; i++) {
+                    <label for="@string.Concat(CharacteristicsValues[i], "CharacteristicsDexterity")"
+                           class="btn btn-secondary @(ButtonGroupHelper(CharacteristicsValues[i], Dexterity, CharacteristicsUsed[i]))">
+                        <InputRadio id="@string.Concat(CharacteristicsValues[i], "CharacteristicsDexterity")" name="dexterity"
+                                    SelectedValue="CharacteristicsValues[i]"
+                                    @bind-Value="Dexterity" class="form-check-input"
+                                    disabled="@CharacteristicsUsed[i]"/>
+                        @CharacteristicsValues[i]
+                    </label>
+                }
+            </div>
+            <small class="form-text text-muted">@DefaultLocalizer["CharacteristicsDexterityHelp"]</small>
+
+            <h6>
+                @DefaultLocalizer["CharacteristicsConstitution"]
+                @if (Constitution > 0) {
+                    <span>(@Constitution)</span>
+                }
+            </h6>
+            <div class="btn-group btn-group-toggle">
+                @for (var i = 0; i < CharacteristicsValues.Length; i++) {
+                    <label for="@string.Concat(CharacteristicsValues[i], "CharacteristicsConstitution")"
+                           class="btn btn-secondary @(ButtonGroupHelper(CharacteristicsValues[i], Constitution, CharacteristicsUsed[i]))">
+                        <InputRadio id="@string.Concat(CharacteristicsValues[i], "CharacteristicsConstitution")" name="constitution"
+                                    SelectedValue="CharacteristicsValues[i]"
+                                    @bind-Value="Constitution" class="form-check-input"
+                                    disabled="@CharacteristicsUsed[i]"/>
+                        @CharacteristicsValues[i]
+                    </label>
+                }
+            </div>
+            <small class="form-text text-muted">@DefaultLocalizer["CharacteristicsConstitutionHelp"]</small>
+
+        </div>
+        <div class="col">
+            <h6>
+                @DefaultLocalizer["CharacteristicsIntelligence"]
+                @if (Intelligence > 0) {
+                    <span>(@Intelligence)</span>
+                }
+            </h6>
+            <div class="btn-group btn-group-toggle">
+                @for (var i = 0; i < CharacteristicsValues.Length; i++) {
+                    <label for="@string.Concat(CharacteristicsValues[i], "CharacteristicsIntelligence")"
+                           class="btn btn-secondary @(ButtonGroupHelper(CharacteristicsValues[i], Intelligence, CharacteristicsUsed[i]))">
+                        <InputRadio id="@string.Concat(CharacteristicsValues[i], "CharacteristicsIntelligence")" name="intelligence"
+                                    SelectedValue="CharacteristicsValues[i]"
+                                    @bind-Value="Intelligence" class="form-check-input"
+                                    disabled="@CharacteristicsUsed[i]"/>
+                        @CharacteristicsValues[i]
+                    </label>
+                }
+            </div>
+            <small class="form-text text-muted">@DefaultLocalizer["CharacteristicsIntelligenceHelp"]</small>
+
+            <h6>
+                @DefaultLocalizer["CharacteristicsWisdom"]
+                @if (Wisdom > 0) {
+                    <span>(@Wisdom)</span>
+                }
+            </h6>
+            <div class="btn-group btn-group-toggle">
+                @for (var i = 0; i < CharacteristicsValues.Length; i++) {
+                    <label for="@string.Concat(CharacteristicsValues[i], "CharacteristicsWisdom")"
+                           class="btn btn-secondary @(ButtonGroupHelper(CharacteristicsValues[i], Wisdom, CharacteristicsUsed[i]))">
+                        <InputRadio id="@string.Concat(CharacteristicsValues[i], "CharacteristicsWisdom")" name="wisdom"
+                                    SelectedValue="CharacteristicsValues[i]"
+                                    @bind-Value="Wisdom" class="form-check-input"
+                                    disabled="@CharacteristicsUsed[i]"/>
+                        @CharacteristicsValues[i]
+                    </label>
+                }
+            </div>
+            <small class="form-text text-muted">@DefaultLocalizer["CharacteristicsWisdomHelp"]</small>
+
+            <h6>
+                @DefaultLocalizer["CharacteristicsCharisma"]
+                @if (Charisma > 0) {
+                    <span>(@Charisma)</span>
+                }
+            </h6>
+            <div class="btn-group btn-group-toggle">
+                @for (var i = 0; i < CharacteristicsValues.Length; i++) {
+                    <label for="@string.Concat(CharacteristicsValues[i], "CharacteristicsCharisma")"
+                           class="btn btn-secondary @(ButtonGroupHelper(CharacteristicsValues[i], Charisma, CharacteristicsUsed[i]))">
+                        <InputRadio id="@string.Concat(CharacteristicsValues[i], "CharacteristicsCharisma")" name="charisma"
+                                    SelectedValue="CharacteristicsValues[i]"
+                                    @bind-Value="Charisma" class="form-check-input"
+                                    disabled="@CharacteristicsUsed[i]"/>
+                        @CharacteristicsValues[i]
+                    </label>
+                }
+            </div>
+            <small class="form-text text-muted">@DefaultLocalizer["CharacteristicsCharismaHelp"]</small>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public EventCallback<Characteristics> OnSaved { get; set; }
+
+    [Parameter]
+    public Characteristics Characteristics { get;set; }
+
+    [Parameter]
+    public EventCallback<Characteristics> CharacteristicsChanged { get; set; }
+
+    [Parameter]
+    public int[] CharacteristicsValues {
+        get => _characteristicsValues;
+        set {
+            _characteristicsValues = value;
+            if (value != default(int[])) {
+                CharacteristicsUsed = CreateCharacteristicsLeft();
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int[]> CharacteristicsValuesChanged { get; set; }
+
+
+    public int Strength {
+        get => Characteristics.Strength;
+        set {
+            Characteristics.Strength = value;
+            CharacteristicsUsed = CreateCharacteristicsLeft();
+            CharacteristicsChanged.InvokeAsync(Characteristics);
+        }
+    }
+
+    public int Dexterity {
+        get => Characteristics.Dexterity;
+        set {
+            Characteristics.Dexterity = value;
+            CharacteristicsUsed = CreateCharacteristicsLeft();
+            CharacteristicsChanged.InvokeAsync(Characteristics);
+        }
+    }
+
+    public int Constitution {
+        get => Characteristics.Constitution;
+        set {
+            Characteristics.Constitution = value;
+            CharacteristicsUsed = CreateCharacteristicsLeft();
+            CharacteristicsChanged.InvokeAsync(Characteristics);
+        }
+    }
+    public int Intelligence {
+        get => Characteristics.Intelligence;
+        set {
+            Characteristics.Intelligence = value;
+            CharacteristicsUsed = CreateCharacteristicsLeft();
+            CharacteristicsChanged.InvokeAsync(Characteristics);
+        }
+    }
+    public int Wisdom {
+        get => Characteristics.Wisdom;
+        set {
+            Characteristics.Wisdom = value;
+            CharacteristicsUsed = CreateCharacteristicsLeft();
+            CharacteristicsChanged.InvokeAsync(Characteristics);
+        }
+    }
+    public int Charisma {
+        get => Characteristics.Charisma;
+        set {
+            Characteristics.Charisma = value;
+            CharacteristicsUsed = CreateCharacteristicsLeft();
+            CharacteristicsChanged.InvokeAsync(Characteristics);
+        }
+    }
+
+    public bool[] CharacteristicsUsed { get; set; }
+
+    public async Task RollDiceForCharacteristics() {
+        var rand = new Random(Guid.NewGuid().GetHashCode());
+        Characteristics = new Characteristics();
+        await CharacteristicsChanged.InvokeAsync(Characteristics);
+        CharacteristicsValues = new int[6];
+        CharacteristicsUsed = new bool[6];
+
+        var dice = new DiceExpression(2, 6) { Random = rand };
+        for (var i = 0; i < 3; i++) {
+            int value = 0;
+            while (CharacteristicsValues.Contains(value)) {
+                value = dice.GetValue();
+            }
+            CharacteristicsValues[i] = value;
+        }
+        for (var i = 0; i < 3; i++) {
+            CharacteristicsValues[i + 3] = 19 - CharacteristicsValues[i];
+        }
+        for (var i = 0; i < 6; i++) {
+            CharacteristicsValues[i] += 6;
+        }
+        await CharacteristicsValuesChanged.InvokeAsync(CharacteristicsValues);
+        await OnSaved.InvokeAsync(Characteristics);
+        StateHasChanged();
+    }
+
+    public void OnResetPressed() {
+        Strength = 0;
+        Dexterity = 0;
+        Constitution = 0;
+        Intelligence = 0;
+        Wisdom = 0;
+        Charisma = 0;
+    }
+
+    private bool[] CreateCharacteristicsLeft() {
+        var characteristicsUsed = new bool[6];
+
+        if (Strength > 0) {
+            var idx = IndexOfFirstUnused(Strength, characteristicsUsed);
+            characteristicsUsed[idx] = true;
+        }
+        if (Dexterity > 0) {
+            var idx = IndexOfFirstUnused(Dexterity, characteristicsUsed);
+            characteristicsUsed[idx] = true;
+        }
+        if (Constitution > 0) {
+            var idx = IndexOfFirstUnused(Constitution, characteristicsUsed);
+            characteristicsUsed[idx] = true;
+        }
+        if (Intelligence > 0) {
+            var idx = IndexOfFirstUnused(Intelligence, characteristicsUsed);
+            characteristicsUsed[idx] = true;
+        }
+        if (Wisdom > 0) {
+            var idx = IndexOfFirstUnused(Wisdom, characteristicsUsed);
+            characteristicsUsed[idx] = true;
+        }
+        if (Charisma > 0) {
+            var idx = IndexOfFirstUnused(Charisma, characteristicsUsed);
+            characteristicsUsed[idx] = true;
+        }
+        return characteristicsUsed;
+    }
+
+    private int IndexOfFirstUnused(int lookingValue, bool[] characteristicsUsed)
+    {
+        for (int i = 0; i < 6; i++) {
+            var value = CharacteristicsValues[i];
+            if (value == lookingValue) {
+                if (characteristicsUsed[i]) {
+                    continue;
+                }
+                return i;
+            }
+        }
+        throw new InvalidOperationException();
+    }
+
+    private int[] _characteristicsValues;
+
+    private string ButtonGroupHelper(int value, int current, bool used) {
+        if (used) {
+            return "disabled";
+        }
+        return value == current ? "active" : "";
+    }
+}

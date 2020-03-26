@@ -1,0 +1,69 @@
+﻿@page "/game/create"
+@using VirtualDice.Games
+@using VirtualDice.Server.Services
+@inject NavigationManager NavigationManager
+@inject IGameService GameService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h3>Create new game</h3>
+            <EditForm Model="@Model" OnValidSubmit="OnValidGameCreation">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="gameName">Game name</label>
+                            <InputText id="gameName" @bind-Value="Model.Name" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label for="gamePwd">Game password</label>
+                            <InputText id="gamePwd" @bind-Value="Model.Password" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gameId">Game identifier</label>
+                            <input class="form-control" type="text" id="gameId" placeholder="@Model.GameId" readonly>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="GameMasterName">Your game master name</label>
+                            <InputText id="GameMasterName" @bind-Value="Model.GameMasterName" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label for="GameMasterPassword">Your password for the game</label>
+                            <InputText type="password" id="GameMasterPassword" @bind-Value="Model.GameMasterPassword" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" type="submit">Create</button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    CreateGameModel Model { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        Model = new CreateGameModel();
+        return base.OnInitializedAsync();
+    }
+
+    async Task OnValidGameCreation()
+    {
+        var game = new GameBuilder(Model.GameId, Model.Name, Model.Password)
+            .AddGameMaster(Model.GameMasterName, Model.GameMasterPassword)
+            .Build();
+        await GameService.CreateAsync(game);
+        var session = new GameSession(game.Id, game.Password, Model.GameMasterName, Model.GameMasterPassword);
+        await LocalStorage.SetItemAsync("GameInfo", session);
+        NavigationManager.NavigateTo("/game");
+    }
+
+}

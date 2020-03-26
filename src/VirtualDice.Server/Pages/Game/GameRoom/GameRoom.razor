@@ -1,0 +1,67 @@
+﻿@page "/game"
+@* ReSharper disable once RedundantUsingDirective *@
+@using VirtualDice.Server.Pages.Game.Shared
+@using Blazored.LocalStorage
+@using VirtualDice.Games
+@using VirtualDice.Server.Services
+@inject IGameService GameService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+@if (Game == null) {
+    <h5>Loading game info</h5>
+}
+else {
+    <div class="container-fluid">
+        <GameHeaderComponent Game="@Game" Player="@Player"/>
+
+        @if (Game.Status == GameStatus.CharacterBuilding) {
+            <CharacterInfoLobbyComponent Game="@Game" CurrentPlayer="@Player"/>
+        }
+    </div>
+}
+
+
+
+@code {
+    bool IsInitialize { get; set; }
+    IGame Game { get; set; }
+    IPlayer Player { get; set; }
+
+    protected override Task OnInitializedAsync() {
+        IsInitialize = true;
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!IsInitialize) {
+            return;
+        }
+        if (!await LocalStorage.ContainKeyAsync("GameInfo")) {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+        var gameSession = await LocalStorage.GetItemAsync<GameSession>("GameInfo");
+        var game = await GameService.FindByIdAsync(gameSession.GameId);
+        if (game == null || !game.Password.Equals(gameSession.GamePassword)) {
+            await LocalStorage.RemoveItemAsync("GameInfo");
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        var player = game.Players.FirstOrDefault(p => p.Name.Equals(gameSession.UserName) && p.Password.Equals(gameSession.UserPassword));
+        if (player == null) {
+            await LocalStorage.RemoveItemAsync("GameInfo");
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        game.Events.Subscribe(@event => { InvokeAsync(StateHasChanged); });
+
+        Game = game;
+        Player = player;
+        IsInitialize = false;
+        StateHasChanged();
+    }
+
+}

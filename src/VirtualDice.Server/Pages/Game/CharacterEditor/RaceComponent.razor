@@ -1,0 +1,189 @@
+﻿@using Microsoft.Extensions.Localization
+@using VirtualDice.Games.Races
+@using VirtualDice.Races
+@using VirtualDice.Resources
+@inject IRaceService RaceService
+@inject IStringLocalizer<Races> RaceLocalizer
+@inject IStringLocalizer<CharacterEditor> DefaultLocalizer
+
+<div class="row">
+    <div class="col" style="text-align: center">
+        <div class="btn-group btn-group-toggle">
+            @foreach (var race in RaceService.Races) {
+                <label class="btn btn-secondary @(Race.NameId == race.NameId ? "active" : "")">
+                    <InputRadio name="race" id="@race.NameId"
+                                SelectedValue="@race.NameId"
+                                @bind-Value="RaceId"/> @RaceLocalizer[race.NameId]
+                </label>
+            }
+        </div>
+    </div>
+</div>
+@if (Race != null)
+{
+    <div class="row">
+        <div class="col">
+            <h5>@RaceLocalizer[Race.NameId]</h5>
+            <p>@RaceLocalizer[Race.SmallDescriptionId]</p>
+            <h6>@DefaultLocalizer["Morphology"]</h6>
+            <div class="row">
+                <div class="col">
+                    <div style="width: 100%; text-align: center;">
+                        <div class="btn-group btn-group-toggle">
+                            @if (Race.Genders.Contains(CharacterGender.Male)) {
+                                <label class="btn btn-secondary @(Gender == CharacterGender.Male ? "active": "")">
+                                    <InputRadio name="sexe" id="Male"
+                                                SelectedValue="@CharacterGender.Male"
+                                                @bind-Value="Gender"/> Male
+                                </label>
+                            }
+                            @if (Race.Genders.Contains(CharacterGender.Female)) {
+                                <label class="btn btn-secondary @(Gender == CharacterGender.Female ? "active": "")">
+                                    <InputRadio name="sexe" id="Female"
+                                                SelectedValue="@CharacterGender.Female"
+                                                @bind-Value="Gender"/> Female
+                                </label>
+                            }
+                            @if (Race.Genders.Contains(CharacterGender.Other)) {
+                                <label class="btn btn-secondary @(Gender == CharacterGender.Other ? "active": "")">
+                                    <InputRadio name="sexe" id="Other"
+                                                SelectedValue="@CharacterGender.Other"
+                                                @bind-Value="Gender"/> Other
+                                </label>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="YourCharacterSize">@DefaultLocalizer["YourCharacterSize"]</label>
+                        <div class="row">
+                            <div class="col-2">
+                                <span>@Race.StartAge @DefaultLocalizer["AgeSuffix"]</span>
+                            </div>
+                            <div class="col">
+                                <InputRange type="range" class="form-control-range" id="YourCharacterSize"
+                                            @bind-Value="Age"
+                                            Min="@Race.StartAge" Max="@((int) (Race.LifeExpectancy * 0.80))"/>
+                            </div>
+                            <div class="col-2">
+                                <span>@((int) (Race.LifeExpectancy * 0.80)) @DefaultLocalizer["AgeSuffix"]</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="YourCharacterSize">@DefaultLocalizer["YourCharacterSize"]</label>
+                        <div class="row">
+                            <div class="col-2">
+                                <span>@Race.Size.Min @DefaultLocalizer["SizeSuffix"]</span>
+                            </div>
+                            <div class="col">
+                                <InputRange type="range" class="form-control-range" id="YourCharacterSize"
+                                            @bind-Value="Size"
+                                            Min="@Race.Size.Min" Max="@Race.Size.Max"/>
+                            </div>
+                            <div class="col-2">
+                                <span>@Race.Size.Max @DefaultLocalizer["SizeSuffix"]</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="YourCharacterWeight">@DefaultLocalizer["YourCharacterWeight"]</label>
+                        <div class="row">
+                            <div class="col-2">
+                                <span>@Race.Weight.Min @DefaultLocalizer["WeightSuffix"]</span>
+                            </div>
+                            <div class="col">
+                                <InputRange type="range" class="form-control-range" id="YourCharacterWeight"
+                                            @bind-Value="Weight"
+                                            Min="@Race.Weight.Min" Max="@Race.Weight.Max"/>
+                            </div>
+                            <div class="col-2">
+                                <span>@Race.Weight.Max @DefaultLocalizer["WeightSuffix"]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    public string RaceId {
+        get => _raceId;
+        set {
+            if (_raceId != value) {
+                _raceId = value;
+                Race = RaceService.Races.FirstOrDefault(p => p.NameId == value);
+                RaceChanged.InvokeAsync(Race);
+            }
+        }
+    }
+
+    [Parameter]
+    public RaceInformation Race { get; set; }
+
+    [Parameter]
+    public EventCallback<RaceInformation> RaceChanged { get; set; }
+
+    [Parameter]
+    public int Age {
+        get => _age;
+        set {
+            if (value != _age) {
+                _age = value;
+                AgeChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int> AgeChanged { get; set; }
+
+    [Parameter]
+    public int Size {
+        get => _size;
+        set {
+            if (value != _size) {
+                _size = value;
+                SizeChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int> SizeChanged { get; set; }
+
+    [Parameter]
+    public int Weight {
+        get => _weight;
+        set {
+            if (value != _weight) {
+                _weight = value;
+                WeightChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int> WeightChanged { get; set; }
+
+    [Parameter]
+    public CharacterGender Gender {
+        get => _gender;
+        set {
+            if (value != _gender) {
+                _gender = value;
+                GenderChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    public EventCallback<CharacterGender> GenderChanged { get; set; }
+
+    private int _age;
+    private int _size;
+    private int _weight;
+    private CharacterGender _gender;
+    private string _raceId;
+}

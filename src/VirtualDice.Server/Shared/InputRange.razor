@@ -1,0 +1,45 @@
+﻿@typeparam TValue
+@using System.Globalization
+@inherits InputBase<TValue>
+
+<input @attributes="AdditionalAttributes" type="range" 
+        value="@Value"
+        min="@Min" max="@Max"
+         @onchange="OnChange"/>
+
+@code {
+
+
+    [Parameter]
+    public int Min { get; set; }
+
+    [Parameter]
+    public int Max { get; set; }
+
+    private void OnChange(ChangeEventArgs args) {
+        if (TryParseValueFromString(args.Value as string, out var res, out _)) {
+            Value = res;
+            ValueChanged.InvokeAsync(Value);
+        }
+    }
+
+    protected override bool TryParseValueFromString(string value, out TValue result, out string errorMessage) {
+        var success = BindConverter.TryConvertTo<TValue>(
+                                                         value, CultureInfo.CurrentCulture, out var parsedValue);
+        if (success)
+        {
+            result = parsedValue;
+            errorMessage = null;
+
+            return true;
+        }
+        else
+        {
+            result = default;
+            errorMessage = $"{FieldIdentifier.FieldName} field isn't valid.";
+
+            return false;
+        }
+    }
+
+}

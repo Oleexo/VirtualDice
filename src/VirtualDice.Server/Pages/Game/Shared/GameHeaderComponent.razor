@@ -1,0 +1,31 @@
+﻿@using VirtualDice.Games
+<div class="row justify-content-between">
+    <div class="col-md-auto">
+        @if (!string.IsNullOrEmpty(ReturnUrl)) {
+            <a href="@ReturnUrl">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        }
+        <span>@Game.Name</span>
+    </div>
+    <div class="col-md-auto">@Game.Id - @Game.Password</div>
+    <div class="col-md-auto">
+        @Player.Name
+        @if (Player.IsGameMaster) {
+            <i>(Gm)</i>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string ReturnUrl { get; set; }
+
+    [Parameter]
+    public IGame Game { get; set; }
+
+    [Parameter]
+    public IPlayer Player { get; set; }
+
+}

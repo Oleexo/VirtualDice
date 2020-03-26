@@ -1,0 +1,28 @@
+﻿@using VirtualDice.Games
+@foreach (var player in Game.Players.Where(p => !p.IsGameMaster)) {
+    <div class="card">
+        <div class="card-header">
+            @player.Name
+        </div>
+        <div class="card-body">
+            @if (IsCurrentPlayer(player)) {
+                if (player.Character == null) {
+                    <a href="/game/edit/character" class="btn btn-primary">Start creating your character</a>
+                }
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IPlayer CurrentPlayer { get; set; }
+
+    [Parameter]
+    public IGame Game { get; set; }
+
+
+    public bool IsCurrentPlayer(IPlayer player) {
+        return player.Id.Equals(CurrentPlayer.Id);
+    }
+}

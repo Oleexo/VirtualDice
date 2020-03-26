@@ -1,0 +1,92 @@
+﻿@page "/game/join"
+@using VirtualDice.Games
+@using VirtualDice.Server.Services
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IGameService GameService
+@inject NavigationManager NavigationManager
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h5>Join game</h5>
+            <EditForm Model="@Model" OnValidSubmit="OnJoinGame">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="GameId">Game id</label>
+                            <InputText id="GameId" @bind-Value="Model.GameId" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label for="Password">Game password</label>
+                            <InputText type="password" id="Password" @bind-Value="Model.Password" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="UserName">Your user name</label>
+                            <InputText id="UserName" @bind-Value="Model.UserName" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label for="UserPassword">Your password for the game</label>
+                            <InputText type="password" id="UserPassword" @bind-Value="Model.UserPassword" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                @if (ErrorMessage != null)
+                {
+                    <p>@ErrorMessage</p>
+                }
+                <button class="btn btn-primary" type="submit">Join</button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    JoinGameModel Model { get; set; }
+    string ErrorMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model = new JoinGameModel();
+#if DEBUG
+        var game = await GameService.FindByIdAsync(Guid.Empty);
+        Model.GameId = game.Id.ToString();
+        Model.Password = game.Password;
+        Model.UserName = "Orion";
+        Model.UserPassword = "test";
+#endif
+    }
+
+    async Task OnJoinGame()
+    {
+        if (!Guid.TryParse(Model.GameId, out var gameId))
+        {
+            ErrorMessage = "Invalid game password or id";
+            return;
+        }
+        var game = await GameService.FindByIdAsync(gameId);
+        if (game == null)
+        {
+            ErrorMessage = "Invalid game password or id";
+            return;
+        }
+        if (!game.Password.Equals(Model.Password))
+        {
+            ErrorMessage = "Invalid game password or id";
+            return;
+        }
+
+        var player = game.Players.FirstOrDefault(p => p.Name.Equals(Model.UserName) && p.Password.Equals(Model.UserPassword));
+        if (player == null) {
+            var newPlayer = new Player(Model.UserName, Model.UserPassword, game.Id);
+            await GameService.AddPlayerToGame(game, newPlayer);
+            player = newPlayer;
+        }
+        var session = new GameSession(game.Id, game.Password, player.Name, player.Password);
+        await LocalStorage.SetItemAsync("GameInfo", session);
+        NavigationManager.NavigateTo("/game");
+    }
+
+}
